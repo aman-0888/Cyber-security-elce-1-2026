@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html ></html>
+<head>
+<title>Aman Secure File</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #080d18;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 90%;
+    max-width: 430px;
+    background: #121c2d;
+    padding: 35px 25px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 30px #007bff30;
+}
+
+h1 {
+    color: #00bfff;
+    letter-spacing: 2px;
+}
+
+p {
+    color: #aab8cc;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.access-btn {
+    background: #007bff;
+    padding: 16px 25px;
+    border-radius: 10px;
+    width: 100%;
+    margin-top: 25px;
+}
+
+.access-btn:hover {
+    background: #0056b3;
+}
+
+.mic-circle {
+    width: 145px;
+    height: 145px;
+    border-radius: 50%;
+    background: #007bff;
+    font-size: 45px;
+    margin: 30px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 25px #007bff80;
+}
+
+.mic-circle:hover {
+    background: #0056b3;
+}
+
+#voiceScreen, #document, #locked {
+    display: none;
+}
+
+.status {
+    margin-top: 15px;
+    color: #00d9ff;
+    min-height: 24px;
+}
+
+.document-box {
+    background: #1c2b40;
+    border: 1px solid #00bfff;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: left;
+    margin-top: 20px;
+}
+
+.document-box h2 {
+    text-align: center;
+    color: #00d9ff;
+}
+
+.document-box p {
+    color: white;
+    line-height: 2;
+}
+
+.lock-icon {
+    font-size: 65px;
+}
+
+.small {
+    font-size: 13px;
+    color: #889bb5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="home" </div>
+
+    <h1>AMAN SECURE FILE</h1>
+
+    <p>Private Document Protection System</p>
+
+    <button class="access-btn" onclick="showVoice()">
+        ACCESS THE FILE
+    </button>
+
+    <p class="small">Authorized Access Only</p>
+
+</div>
+
+
+<div class="container" id="voiceScreen"  class="voice-status" id="voiceStatus"
+    
+</div>
+
+    <h1>VOICE AUTHENTICATION</h1>
+
+    <p>Speak your voice password to access the document.</p>
+     <!-- Voice status indicator (animated) -->
+  <div id="voiceStatus" class="voice-status">
+    <span class="status-dot"></span>
+    <span id="voiceStatusText">Idle</span>
+  </div>
+    <button class="mic-circle" id="micButton"
+        onclick="startVoice()">
+        🎙️
+    </button>
+
+    <p id="status" class="status">
+        Click microphone to speak
+    </p>
+
+    <p>Attempts Remaining: <span id="attempts">3</span></p>
+
+    <p class="small">Maximum 3 attempts allowed</p>
+
+</div>
+
+
+<div class="container" id="document">
+
+    <h1>ACCESS GRANTED</h1>
+
+    <p>Identity Verified Successfully ✓</p>
+
+    <div class="document-box">
+
+        <h2>PERSONAL DOCUMENT</h2>
+
+        <p>
+            <b>NAME:</b> Aman Singh Yadav<br>
+
+            <b>CLASS:</b> Elce-1<br>
+
+            <b>ACCESS:</b> Authorized User<br>
+
+            <b>DOCUMENT:</b> Private File<br>
+
+            <b>STATUS:</b> Unlocked
+        </p>
+
+        <hr>
+
+        <p>Welcome, Aman Singh Yadav!</p>
+
+        <p>Your private document has been opened successfully.</p>
+
+    </div>
+
+</div>
+
+
+<div class="container" id="locked">
+
+    <div class="lock-icon">🔒</div>
+
+    <h1>ACCESS DENIED</h1>
+
+    <p>Maximum attempts exceeded.</p>
+
+    <p>Your file is locked for this session.</p>
+
+    <p class="small">Reload the page to restart this demo.</p>
+
+</div>
+
+
+<script>
+
+// CHANGE YOUR VOICE PASSWORD HERE
+const VOICE_PASSWORD = "open aman secure file";
+
+let remainingAttempts = 3;
+let isLocked = false;
+
+function showVoice() {
+
+    document.getElementById("home").style.display = "none";
+
+    document.getElementById("voiceScreen").style.display = "block";
+
+}
+
+function startVoice() {
+
+    if (isLocked) return;
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+
+        document.getElementById("status").innerText =
+            "Voice recognition not supported. Use Google Chrome.";
+
+        return;
+
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    document.getElementById("status").innerText =
+        "Listening... Speak your password";
+
+    document.getElementById("micButton").disabled = true;
+
+    recognition.onresult = function(event) {
+
+        const spokenText =
+            event.results[0][0].transcript
+            .toLowerCase()
+            .trim()
+            .replace(/[.,!?]/g, "")
+            .replace(/\s+/g, " ");
+
+        checkPassword(spokenText);
+
+    };
+
+    recognition.onerror = function(event) {
+
+        document.getElementById("status").innerText =
+            "Voice error: " + event.error;
+
+        document.getElementById("micButton").disabled = false;
+
+    };
+
+    recognition.onend = function() {
+
+        document.getElementById("micButton").disabled = false;
+
+    };
+
+    recognition.start();
+
+}
+
+
+function checkPassword(spokenText) {
+
+    if (isLocked) return;
+
+    if (spokenText === VOICE_PASSWORD) {
+
+        document.getElementById("voiceScreen").style.display = "none";
+
+        document.getElementById("document").style.display = "block";
+
+    }
+
+    else {
+
+        remainingAttempts--;
+
+        document.getElementById("attempts").innerText =
+            remainingAttempts;
+
+        if (remainingAttempts <= 0) {
+
+            isLocked = true;
+
+            document.getElementById("voiceScreen").style.display = "none";
+
+            document.getElementById("locked").style.display = "block";
+
+        }
+
+        else {
+
+            document.getElementById("status").innerText =
+                "Wrong password! Try again.";
+
+        }
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
