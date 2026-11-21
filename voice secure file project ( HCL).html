@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aman Secure File</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #071426;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 90%;
+    max-width: 560px;
+    background: #10243d;
+    padding: 40px 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 30px #007bff33;
+}
+
+h1 {
+    color: #00aaff;
+    font-size: 38px;
+    margin-bottom: 18px;
+}
+
+p {
+    color: #dbeafe;
+    font-size: 18px;
+    margin: 15px 0;
+}
+
+button {
+    background: #008cff;
+    color: white;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 18px;
+    font-size: 17px;
+}
+
+button:hover {
+    background: #006dcc;
+}
+
+.screen {
+    display: none;
+}
+
+#home {
+    display: block;
+}
+
+#status {
+    color: #00ff99;
+    font-weight: bold;
+}
+
+#listening {
+    font-size: 22px;
+    margin-top: 20px;
+}
+
+#document {
+    display: none;
+}
+
+#locked {
+    display: none;
+}
+
+#locked h1 {
+    color: #ff5555;
+}
+
+#result {
+    color: #00ff99;
+    word-wrap: break-word;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <!-- HOME SCREEN -->
+    <div id="home" class="screen">
+
+        <h1>AMAN SECURE FILE</h1>
+
+        <p>Voice Password Protected File System</p>
+
+        <p>Speak your voice password to unlock the secure file.</p>
+
+        <button onclick="startVoice()">
+            Start Voice Unlock
+        </button>
+
+        <p id="status">Waiting for voice command...</p>
+
+    </div>
+    
+
+    <!-- VOICE AUTHENTICATION SCREEN -->
+    <div id="voiceScreen" class="screen">
+
+        <h1>Voice Authentication</h1>
+
+        <p>Please speak your voice password.</p>
+
+        <h3 id="listening">🎤 Ready to Listen...</h3>
+
+        <p id="result"></p>
+
+        <p id="attempts">Attempts remaining: 3</p>
+
+        <button onclick="startVoice()" id="retryBtn">
+            Try Again
+        </button>
+
+    </div>
+
+
+    <!-- UNLOCKED FILE SCREEN -->
+    <div id="document">
+
+        <h1>File Unlocked</h1>
+
+        <p>Access Granted Successfully!</p>
+        <p><b>Name:</b>Aman Singh Yadav</p>  
+        <p><b>College:</b> ABES Engineering college Ghaziabad</p> 
+        <p><b>Roll Number:</b> 18 </p>
+        <p><b>Course:</b> B.Tech</p> 
+        <p><b>Branch:</b> ELCE </p> 
+        <p><b>Address:</b> Mahagun mascot crossing republik ghaziabad</p>        
+        <p>Your secure file is now open.</p>
+
+        <button onclick="lockFile()">
+            Lock File
+        </button>
+
+    </div>
+
+
+    <!-- LOCKED SCREEN -->
+    <div id="locked">
+
+        <h1>Access Denied</h1>
+
+        <p>Maximum attempts reached.</p>
+
+        <p>Your file is locked.</p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+// Maximum attempts
+let attempts = 3;
+
+// Voice password
+const voicePassword = "open aman secure file";
+
+let recognition;
+let hasResult = false;
+let hasError = false;
+
+
+// START VOICE RECOGNITION
+function startVoice() {
+
+    if (attempts <= 0) {
+        return;
+    }
+
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Speech Recognition is not supported. Please use Google Chrome.");
+        return;
+    }
+
+    // Create recognition object
+    recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+
+    hasResult = false;
+    hasError = false;
+
+    document.getElementById("home").style.display = "none";
+    document.getElementById("voiceScreen").style.display = "block";
+
+    document.getElementById("listening").innerText =
+        "🎤 Starting microphone...";
+
+    document.getElementById("result").innerText = "";
+
+    document.getElementById("retryBtn").disabled = true;
+
+    // Recognition started
+    recognition.onstart = function() {
+
+        document.getElementById("listening").innerText =
+            "🎤 Listening... Speak Now";
+
+        document.getElementById("retryBtn").disabled = false;
+    };
+
+
+    // Voice result received
+    recognition.onresult = function(event) {
+
+        hasResult = true;
+
+        let spokenText = event.results[0][0].transcript
+            .toLowerCase()
+            .replace(/[.,!?]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        document.getElementById("result").innerText =
+            "You said: " + spokenText;
+
+        // Check password
+        if (spokenText === voicePassword) {
+
+            document.getElementById("listening").innerText =
+                "✅ Voice Password Matched!";
+
+            document.getElementById("voiceScreen").style.display = "none";
+            document.getElementById("document").style.display = "block";
+
+        } else {
+
+            attempts--;
+
+            document.getElementById("attempts").innerText =
+                "Attempts remaining: " + attempts;
+
+            if (attempts <= 0) {
+
+                document.getElementById("voiceScreen").style.display = "none";
+                document.getElementById("locked").style.display = "block";
+
+            } else {
+
+                document.getElementById("listening").innerText =
+                    "❌ Wrong Password! Try Again.";
+
+            }
+        }
+    };
+
+
+    // Error handling
+    recognition.onerror = function(event) {
+
+        hasError = true;
+
+        let errorMessage = event.error;
+
+        if (errorMessage === "not-allowed") {
+            document.getElementById("listening").innerText =
+                "❌ Microphone permission denied. Allow microphone access.";
+        }
+
+        else if (errorMessage === "no-speech") {
+            document.getElementById("listening").innerText =
+                "⚠️ No voice detected. Please try again.";
+        }
+
+        else if (errorMessage === "network") {
+            document.getElementById("listening").innerText =
+                "⚠️ Network error. Check your internet connection.";
+        }
+
+        else {
+            document.getElementById("listening").innerText =
+                "⚠️ Voice error: " + errorMessage;
+        }
+
+        document.getElementById("retryBtn").disabled = false;
+
+        console.log("Voice Error:", errorMessage);
+    };
+
+
+    // Recognition stopped
+    recognition.onend = function() {
+
+        if (!hasResult && !hasError) {
+
+            document.getElementById("listening").innerText =
+                "⚠️ Listening stopped. Please try again.";
+
+        }
+
+        document.getElementById("retryBtn").disabled = false;
+    };
+
+
+    // Start microphone
+    try {
+        recognition.start();
+    }
+
+    catch(error) {
+
+        document.getElementById("listening").innerText =
+            "Unable to start microphone. Please try again.";
+
+        document.getElementById("retryBtn").disabled = false;
+
+        console.log(error);
+    }
+
+}
+
+
+// LOCK FILE
+function lockFile() {
+
+    document.getElementById("document").style.display = "none";
+
+    document.getElementById("home").style.display = "block";
+
+    attempts = 3;
+
+    document.getElementById("attempts").innerText =
+        "Attempts remaining: 3";
+
+    document.getElementById("status").innerText =
+        "File locked. Speak password to unlock.";
+
+    document.getElementById("listening").innerText =
+        "🎤 Ready to Listen...";
+
+    document.getElementById("result").innerText = "";
+
+}
+
+</script>
+
+</body>
+</html>
